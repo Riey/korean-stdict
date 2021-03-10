@@ -19,24 +19,22 @@ fn process(file: &Path) -> Result<Vec<(String, String)>, quick_xml::Error> {
     loop {
         match reader.read_event(&mut buf)? {
             Event::Start(ref e) => {
-                match unsafe { std::str::from_utf8_unchecked(e.name()) } {
-                    "word" => {
+                match e.name() {
+                    b"word" => {
                         // drop text
                         reader.read_event(&mut buf)?;
                         if let Event::CData(ref data) = reader.read_event(&mut buf)? {
                             word = data.unescape_and_decode(&reader)?;
-                            // word = std::str::from_utf8(data.escaped())?
-                            //     .replace(|c| matches!(c, '-' | '^'), "");
                         }
                     }
-                    "original_language" => {
+                    b"original_language" => {
                         // drop text
                         reader.read_event(&mut buf)?;
                         if let Event::CData(ref data) = reader.read_event(&mut buf)? {
                             hanja = data.unescape_and_decode(&reader)?;
                         }
                     }
-                    "language_type" => {
+                    b"language_type" => {
                         reader.read_event(&mut buf)?;
                         if let Event::CData(ref data) = reader.read_event(&mut buf)? {
                             if data.escaped() == "한자".as_bytes() {
